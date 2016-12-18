@@ -25,5 +25,5 @@ CHIPCheck 는 IP가 동일한 부캐들을 쉽고 빠르게 강퇴할 수 있습
 
 ## 설치 방법
 
-[https://github.com/steakteam/CHIPCheck/releases](릴리스) 탭에서 .mslp 파일을 다운로드 받아
+[릴리스](https://github.com/steakteam/CHIPCheck/releases) 탭에서 .mslp 파일을 다운로드 받아
 CommandHelper/LocalPackages 폴더에 넣으시면 됩니다.
