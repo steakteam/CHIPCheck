@@ -1,0 +1,96 @@
+/ipcheck [$1] [$2] [$] = >>>
+	if(!pisop(player()), die(colorize('&b[CHIPCheck] &c권한이 없습니다.')))
+	if(!has_value('ipcheck.exceptnick'), store_value('ipcheck.exceptnick', array()))
+	if(!has_value('ipcheck.exceptip'), store_value('ipcheck.exceptip', array()))
+	if(!has_value('ipcheck.autocheck'), store_value('ipcheck.autocheck', true))
+	@exceptnick = import('ipcheck.exceptnick')
+	@exceptip = import('ipcheck.exceptip')
+	switch($1) {
+		case 'check':
+			@iparray = array()
+			@kickedplayer = array()
+			msg(colorize('&b[CHIPCheck] &cIP 검사를 시작합니다...'))
+			foreach(@player in all_players()) {
+				if(!array_contains(@iparray, pinfo(@player, 3)) || array_contains(@exceptnick, @player) || array_contains(@exceptip, pinfo(@player, 3))) {
+					array_set(@iparray, @player, pinfo(@player,3))
+				} else {
+					@player2 = array_indexes(@iparray, pinfo(@player, 3))[0]
+					if(ponline(@player2), pkick(@player2, colorize('&c동일한 IP 로 접속한 플레이어가 이미 존재합니다!')))
+					pkick(@player, colorize('&c동일한 IP 로 접속한 플레이어가 이미 존재합니다!'))
+					if(!array_contains_ic(@kickedplayer, @player), array_push(@kickedplayer, @player))
+					if(!array_contains_ic(@kickedplayer, @player2), array_push(@kickedplayer, @player2))
+				}
+			}
+			if(array_size(@kickedplayer) == 0, array_push(@kickedplayer, '없음'))
+			msg(colorize('&b[CHIPCheck] &c모든 IP 의 검사를 완료하였습니다. 추방된 플레이어:'array_implode(@kickedplayer, ', ')))
+			break()
+		case 'addnick':
+			if($2 != '') {
+				array_push(@exceptnick, $2)
+				msg(colorize('&b[CHIPCheck] &a닉네임 &c'.$2.' &a님이 예외 목록에 추가되었습니다.'))
+			} else {
+				msg(colorize('&b[CHIPCheck] &c추가하고 싶은 닉네임을 입력하세요!'))
+			}
+			break()
+		case 'remnick':
+			if(array_contains(@exceptnick, $2)) {
+				array_remove_values(@exceptnick, $2)
+				msg(colorize('&b[CHIPCheck] &a닉네임 &c'.$2.' &a님을 예외 목록에서 제거하였습니다.'))
+			} else {
+				msg(colorize('&b[CHIPCheck] &c목록에 등록되어 있는 닉네임을 입력하세요!'))
+			}
+			break()
+		case 'listnick':
+			if(array_size(@exceptnick) == 0, 
+				msg(colorize('&b[CHIPCheck] &c예외 목록에 추가되어 있는 닉네임이 없습니다.')),
+				msg(colorize('&b[CHIPCheck] &c예외 목록에 추가되어 있는 닉네임 목록:&a'array_implode(@exceptnick, ', ')))
+			)
+			break()
+		case 'addip':
+			if($2 != '') {
+				array_push(@exceptip, $2)
+				msg(colorize('&b[CHIPCheck] &aIP &c'.$2.' &a가 예외 목록에 추가되었습니다.'))
+			} else {
+				msg(colorize('&b[CHIPCheck] &c추가하고 싶은 IP를 입력하세요!'))
+			}
+			break()
+		case 'remip':
+			if(array_contains(@exceptip, $2)) {
+				array_remove_values(@exceptip, $2)
+				msg(colorize('&b[CHIPCheck] &aIP &c'.$2.' &a를 예외 목록에서 제거하였습니다.'))
+			} else {
+				msg(colorize('&b[CHIPCheck] &c목록에 등록되어 있는 IP를 입력하세요!'))
+			}
+			break()
+		case 'listip':
+			if(array_size(@exceptip) == 0, 
+				msg(colorize('&b[CHIPCheck] &c예외 목록에 추가되어 있는 IP가 없습니다.')),
+				msg(colorize('&b[CHIPCheck] &c예외 목록에 추가되어 있는 IP 목록:&a'array_implode(@exceptip, ', ')))
+			)
+			break()
+		case 'autokick':
+			if($2 == 'true' || $2 == 'false') {
+				store_value('ipcheck.autocheck', $2)
+			} else {
+				store_value('ipcheck.autocheck', !get_value('ipcheck.autocheck'))
+				
+			}
+			export('ipcheck.autocheck', get_value('ipcheck.autocheck'))
+			if(import('ipcheck.autocheck'), msg(colorize('&b[CHIPCheck] &a접속시 IP 중복 확인이 켜졌습니다.')), msg(colorize('&b[CHIPCheck] &c접속시 IP 중복 확인이 꺼졌습니다.')))
+			break()
+		default:
+			msg(colorize('&b[CHIPCheck] &a/ipcheck check &e- 예외 닉네임/IP 를 제외하고 중복 IP인 사용자를 전부 추방합니다.'))
+			msg(colorize('&b[CHIPCheck] &a/ipcheck addnick <닉네임> &e- 예외 닉네임을 추가합니다.'))
+			msg(colorize('&b[CHIPCheck] &a/ipcheck remnick <닉네임> &e- 예외 닉네임을 제거합니다.'))
+			msg(colorize('&b[CHIPCheck] &a/ipcheck listnick &e- 예외 닉네임의 목록을 봅니다.'))
+			msg(colorize('&b[CHIPCheck] &a/ipcheck addip <IP> &e- 예외 IP를 추가합니다.'))
+			msg(colorize('&b[CHIPCheck] &a/ipcheck remip <IP> &e- 예외 IP를 제거합니다.'))
+			msg(colorize('&b[CHIPCheck] &a/ipcheck listip &e- 예외 IP의 목록을 봅니다.'))
+			msg(colorize('&b[CHIPCheck] &a/ipcheck autokick [true/false] &e- 접속시 중복 IP 접속 불가 기능을 끄고 켭니다.'))
+			break()
+	}
+	store_value('ipcheck.exceptip', @exceptip)
+	export('ipcheck.exceptip', @exceptip)
+	store_value('ipcheck.exceptnick', @exceptnick)
+	export('ipcheck.exportnick', @exceptnick)
+<<<
